@@ -4,7 +4,6 @@ import Hero from './components/Hero'
 import About from './components/About'
 import Skills from './components/Skills'
 import FeaturedProjects from './components/FeaturedProjects'
-import GithubProjects from './components/GithubProjects'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import ProjectManager from './components/ProjectManager'
@@ -15,11 +14,10 @@ const sections = [
   { id: 'about', label: 'About' },
   { id: 'skills', label: 'Skills' },
   { id: 'featured-projects', label: 'Featured' },
-  { id: 'projects', label: 'Projects' },
   { id: 'contact', label: 'Contact' },
 ]
 
-const CUSTOM_PROJECTS_STORAGE_KEY = 'portfolio-custom-featured-projects-v3'
+const CUSTOM_PROJECTS_STORAGE_KEY = 'portfolio-custom-featured-projects-v4'
 
 const normalizeStoredProject = (project, index) => {
   const title = String(project?.title || '').trim()
@@ -121,13 +119,6 @@ function App() {
             onDeleteProject={handleDeleteProject}
           />
           <FeaturedProjects projects={featuredProjects} />
-        </section>
-
-        <section id="projects" className="section-shell">
-          <GithubProjects
-            githubUsername={portfolioConfig.githubUsername}
-            githubUrl={portfolioConfig.github}
-          />
         </section>
 
         <section id="contact" className="section-shell">

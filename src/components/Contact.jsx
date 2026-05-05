@@ -118,7 +118,7 @@ function Contact({ email, linkedin, github }) {
         className="glass-panel p-8"
       >
         <h3 className="font-display text-2xl font-semibold text-white">Contact Form</h3>
-        <p className="mt-2 text-sm text-slate-300">Connected with backend.</p>
+        <p className="mt-2 text-sm text-slate-300">Fill out the form and send your message.</p>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <div>

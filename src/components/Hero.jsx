@@ -24,7 +24,7 @@ function Hero({ name, role, intro }) {
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">{intro}</p>
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <a
-            href="#projects"
+            href="#featured-projects"
             className="rounded-xl bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-400 hover:shadow-glow"
           >
             View Projects
