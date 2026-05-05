@@ -93,6 +93,8 @@ const parseLinksText = (value) =>
     .map((item) => normalizeUrl(item))
     .filter(Boolean)
 
+const DESCRIPTION_LIMIT = 200
+
 const emptyForm = {
   title: '',
   description: '',
@@ -177,7 +179,7 @@ function ProjectManager({ settings, customProjects = [], onAddProject, onUpdateP
     event.preventDefault()
 
     const title = formData.title.trim()
-    const description = formData.description.trim()
+    const description = formData.description.trim().slice(0, DESCRIPTION_LIMIT)
     const sourceLink = normalizeUrl(formData.link)
     const extraLinks = parseLinksText(formData.deployedLinksText)
     const technologies = formData.technologies
@@ -296,7 +298,7 @@ function ProjectManager({ settings, customProjects = [], onAddProject, onUpdateP
               name="link"
               value={formData.link}
               onChange={updateField}
-              placeholder="Source project link"
+              placeholder="GitHub project link"
               className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none"
             />
             <textarea
@@ -304,7 +306,7 @@ function ProjectManager({ settings, customProjects = [], onAddProject, onUpdateP
               rows="3"
               value={formData.deployedLinksText}
               onChange={updateField}
-              placeholder="Deployed links (separate multiple links with spaces)"
+              placeholder="Live deployed links (separate multiple links with spaces)"
               className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
             />
             <input
@@ -321,8 +323,12 @@ function ProjectManager({ settings, customProjects = [], onAddProject, onUpdateP
               value={formData.description}
               onChange={updateField}
               placeholder="Project description"
+              maxLength={DESCRIPTION_LIMIT}
               className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
             />
+            <p className="text-right text-xs text-slate-400 sm:col-span-2">
+              {formData.description.length}/{DESCRIPTION_LIMIT}
+            </p>
             <div className="flex flex-wrap gap-2 sm:col-span-2">
               <button
                 type="submit"

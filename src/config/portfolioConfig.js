@@ -20,6 +20,32 @@ const portfolioConfig = {
     otpDigits: 6,
   },
   skills: ['UI/UX', 'Figma', 'React', 'HTML', 'CSS', 'JavaScript', 'GitHub'],
+  figmaSection: {
+    heading: 'Figma Design Work',
+    summary:
+      'This section showcases my interface design process, prototypes, and design systems built in Figma.',
+    projects: [
+      {
+        title: 'Mobile Banking App UI',
+        type: 'UI Design',
+        description: 'Clean mobile-first banking dashboard with streamlined transactions and analytics views.',
+        link: 'https://figma.com/',
+      },
+      {
+        title: 'SaaS Dashboard System',
+        type: 'Design System',
+        description:
+          'Reusable components, color tokens, typography scales, and interaction states for fast product delivery.',
+        link: 'https://figma.com/',
+      },
+      {
+        title: 'E-commerce Redesign',
+        type: 'UX Case Study',
+        description: 'Improved checkout flow and product discovery through UX research and high-fidelity mockups.',
+        link: 'https://figma.com/',
+      },
+    ],
+  },
   featuredProjects: [],
 }
 

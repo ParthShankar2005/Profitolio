@@ -1,16 +1,15 @@
 import { motion } from 'framer-motion'
 
-const uniqueLinks = (project) => {
-  const links = [
-    ...(project?.link ? [project.link] : []),
-    ...(Array.isArray(project?.deployedLinks)
-      ? project.deployedLinks
-      : project?.deployedLink
-        ? [project.deployedLink]
-        : []),
-  ]
+const getProjectLinks = (project) => {
+  const githubLink = project?.link || ''
+  const rawLiveLinks = Array.isArray(project?.deployedLinks)
+    ? project.deployedLinks
+    : project?.deployedLink
+      ? [project.deployedLink]
+      : []
 
-  return [...new Set(links.filter(Boolean))]
+  const liveLinks = [...new Set(rawLiveLinks.filter(Boolean).filter((item) => item !== githubLink))]
+  return { githubLink, liveLinks }
 }
 
 function FeaturedProjects({ projects }) {
@@ -36,7 +35,7 @@ function FeaturedProjects({ projects }) {
 
       <div className="mt-8 grid gap-5 md:grid-cols-2">
         {projects.map((project, index) => {
-          const links = uniqueLinks(project)
+          const { githubLink, liveLinks } = getProjectLinks(project)
 
           return (
             <motion.div
@@ -67,15 +66,25 @@ function FeaturedProjects({ projects }) {
                   <h4 className="text-lg font-semibold text-white">{project.title}</h4>
                   <p className="mt-2 text-xs text-slate-300">Project links</p>
                   <div className="mt-4 w-full max-w-sm space-y-2 overflow-y-auto">
-                    {links.map((link, linkIndex) => (
+                    {githubLink && (
                       <a
-                        key={`${project.title}-link-${linkIndex}`}
+                        href={githubLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded-xl border border-blue-300/30 bg-blue-300/10 px-3 py-2 text-xs font-semibold text-blue-100 transition hover:bg-blue-300/20"
+                      >
+                        GitHub Link
+                      </a>
+                    )}
+                    {liveLinks.map((link, linkIndex) => (
+                      <a
+                        key={`${project.title}-live-${linkIndex}`}
                         href={link}
                         target="_blank"
                         rel="noreferrer"
-                        className="block rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/20"
+                        className="block rounded-xl border border-emerald-300/35 bg-emerald-300/10 px-3 py-2 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-300/20"
                       >
-                        Link {linkIndex + 1}
+                        Live {linkIndex + 1}
                       </a>
                     ))}
                   </div>

@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import About from './components/About'
 import Skills from './components/Skills'
+import FigmaSection from './components/FigmaSection'
 import FeaturedProjects from './components/FeaturedProjects'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
@@ -13,6 +14,7 @@ const sections = [
   { id: 'home', label: 'Home' },
   { id: 'about', label: 'About' },
   { id: 'skills', label: 'Skills' },
+  { id: 'figma', label: 'Figma' },
   { id: 'featured-projects', label: 'Featured' },
   { id: 'contact', label: 'Contact' },
 ]
@@ -108,6 +110,14 @@ function App() {
 
         <section id="skills" className="section-shell">
           <Skills skills={portfolioConfig.skills} />
+        </section>
+
+        <section id="figma" className="section-shell">
+          <FigmaSection
+            heading={portfolioConfig.figmaSection?.heading}
+            summary={portfolioConfig.figmaSection?.summary}
+            projects={portfolioConfig.figmaSection?.projects}
+          />
         </section>
 
         <section id="featured-projects" className="section-shell">
