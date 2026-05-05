@@ -25,15 +25,15 @@ const applyCommonEmbedParameters = (url) => {
   url.searchParams.set('embed-host', FIGMA_EMBED_HOST)
   url.searchParams.delete('embed_host')
   url.searchParams.set('footer', 'false')
-  url.searchParams.set('viewport-controls', 'false')
+  url.searchParams.set('viewport-controls', 'true')
 }
 
 const optimizePrototypeEmbed = (url) => {
   url.searchParams.set('show-proto-sidebar', 'false')
   url.searchParams.set('hotspot-hints', 'false')
   url.searchParams.set('device-frame', 'false')
-  url.searchParams.set('scaling', 'fit-width')
-  url.searchParams.set('content-scaling', 'responsive')
+  url.searchParams.set('scaling', 'scale-down')
+  url.searchParams.set('content-scaling', 'fixed')
 }
 
 const optimizeFileEmbed = (url) => {
