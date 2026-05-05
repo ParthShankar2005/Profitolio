@@ -32,7 +32,7 @@ const optimizePrototypeEmbed = (url) => {
   url.searchParams.set('show-proto-sidebar', 'false')
   url.searchParams.set('hotspot-hints', 'false')
   url.searchParams.set('device-frame', 'false')
-  url.searchParams.set('scaling', 'scale-down')
+  url.searchParams.set('scaling', 'scale-down-width')
   url.searchParams.set('content-scaling', 'fixed')
 }
 
@@ -118,7 +118,7 @@ function FigmaSection({
                   <iframe
                     title={`${project.title} prototype preview`}
                     src={embedSrc}
-                    className="aspect-video w-full"
+                    className="h-[350px] w-full sm:h-[390px] lg:h-[430px]"
                     style={{ border: 0 }}
                     loading="lazy"
                     allowFullScreen
