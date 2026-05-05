@@ -65,7 +65,6 @@ const normalizeFigmaProject = (project, index) => {
     description: String(project?.description || '').trim(),
     link,
     embedUrl: String(project?.embedUrl || '').trim(),
-    previewScale: Number(project?.previewScale) > 0 ? Number(project.previewScale) : undefined,
   }
 }
 

@@ -29,7 +29,6 @@ const portfolioConfig = {
         title: 'Pizza Hut Prototype',
         type: 'Figma Prototype',
         description: 'Interactive Pizza Hut interface prototype designed in Figma.',
-        previewScale: 1.34,
         link: 'https://www.figma.com/proto/KPixvLQc9N53IAj9rDDFSu/pizza?node-id=3-76&scaling=contain&content-scaling=fixed&t=4N2wasmKymbhvkaD-1',
         embedUrl:
           'https://embed.figma.com/proto/KPixvLQc9N53IAj9rDDFSu/pizza?node-id=3-76&scaling=contain&content-scaling=fixed&embed-host=share',
@@ -38,7 +37,6 @@ const portfolioConfig = {
         title: 'Red Bull Prototype',
         type: 'Figma Prototype',
         description: 'Interactive Red Bull themed prototype with custom layout and flow design.',
-        previewScale: 1.26,
         link: 'https://www.figma.com/proto/yIV5dVzwUmzk02VQaAW2Tx/Untitled?node-id=3-121&starting-point-node-id=3%3A121&t=pF9mzfB1OyQ9uCGp-1',
         embedUrl:
           'https://embed.figma.com/proto/yIV5dVzwUmzk02VQaAW2Tx/Untitled?node-id=3-121&starting-point-node-id=3%3A121&embed-host=share',

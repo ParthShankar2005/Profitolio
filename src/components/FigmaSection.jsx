@@ -40,15 +40,6 @@ const optimizeFileEmbed = (url) => {
   url.searchParams.set('page-selector', 'false')
 }
 
-const resolvePreviewScale = (project) => {
-  const parsed = Number(project?.previewScale)
-  if (Number.isFinite(parsed) && parsed > 0) {
-    return parsed
-  }
-
-  return 1.28
-}
-
 const getOptimizedEmbedUrl = (rawUrl, fallbackUrl = '') => {
   const input = rawUrl || fallbackUrl
   if (!input) {
@@ -112,7 +103,6 @@ function FigmaSection({
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         {projects.map((project, index) => {
           const embedSrc = getOptimizedEmbedUrl(project.embedUrl, project.link)
-          const previewScale = resolvePreviewScale(project)
 
           return (
             <motion.article
@@ -124,16 +114,12 @@ function FigmaSection({
               className="rounded-2xl border border-white/10 bg-slate-900/85 p-5 shadow-glass transition duration-300 hover:-translate-y-1 hover:border-cyan-300/35 hover:shadow-glow"
             >
               {embedSrc && (
-                <div className="relative mb-4 h-[350px] overflow-hidden rounded-xl border border-white/15 bg-slate-900 sm:h-[390px] lg:h-[430px]">
+                <div className="mb-4 overflow-hidden rounded-xl border border-white/15 bg-transparent">
                   <iframe
                     title={`${project.title} prototype preview`}
                     src={embedSrc}
-                    className="absolute left-1/2 top-1/2 h-full w-full max-w-none"
-                    style={{
-                      border: 0,
-                      transform: `translate(-50%, -50%) scale(${previewScale})`,
-                      transformOrigin: 'center center',
-                    }}
+                    className="h-[350px] w-full sm:h-[390px] lg:h-[430px]"
+                    style={{ border: 0 }}
                     loading="lazy"
                     allowFullScreen
                   />
