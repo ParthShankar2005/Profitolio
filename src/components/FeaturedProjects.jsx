@@ -12,26 +12,35 @@ const getProjectLinks = (project) => {
   return { githubLink, liveLinks }
 }
 
-function FeaturedProjects({ projects }) {
+function FeaturedProjects({
+  projects = [],
+  showHeader = true,
+  heading = 'Featured Projects',
+  summary = 'Highlighted projects from your custom secure project manager.',
+}) {
   return (
     <div>
-      <motion.h2
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.35 }}
-        className="section-title"
-      >
-        Featured Projects
-      </motion.h2>
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.35 }}
-        transition={{ delay: 0.08 }}
-        className="section-copy"
-      >
-        Highlighted projects from your custom secure project manager.
-      </motion.p>
+      {showHeader && (
+        <>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.35 }}
+            className="section-title"
+          >
+            {heading}
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.35 }}
+            transition={{ delay: 0.08 }}
+            className="section-copy"
+          >
+            {summary}
+          </motion.p>
+        </>
+      )}
 
       <div className="mt-8 grid gap-5 md:grid-cols-2">
         {projects.map((project, index) => {
@@ -44,7 +53,7 @@ function FeaturedProjects({ projects }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, delay: index * 0.08 }}
-              className="project-flip-card h-72"
+              className="project-flip-card project-flip-card-auto"
             >
               <div className="project-flip-card-inner">
                 <article className="project-flip-face project-flip-front glass-panel flex h-full flex-col p-5">

@@ -33,6 +33,7 @@ body {
 .project-flip-card-inner {
   position: relative;
   height: 100%;
+  transform-origin: center center;
   transform-style: preserve-3d;
   transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -46,6 +47,16 @@ body {
 
 .project-flip-back {
   transform: rotateY(180deg);
+}
+
+.project-flip-card-auto .project-flip-card-inner {
+  display: grid;
+  height: auto;
+}
+
+.project-flip-card-auto .project-flip-face {
+  position: relative;
+  grid-area: 1 / 1;
 }
 
 @media (hover: hover) and (pointer: fine) {

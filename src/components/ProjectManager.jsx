@@ -103,14 +103,36 @@ const emptyForm = {
   deployedLinksText: '',
 }
 
-function ProjectManager({ settings, customProjects = [], onAddProject, onUpdateProject, onDeleteProject }) {
+const emptyFigmaForm = {
+  title: '',
+  type: '',
+  description: '',
+  link: '',
+  embedUrl: '',
+}
+
+function ProjectManager({
+  settings,
+  customProjects = [],
+  figmaProjects = [],
+  onAddProject,
+  onUpdateProject,
+  onDeleteProject,
+  onAddFigmaProject,
+  onUpdateFigmaProject,
+  onDeleteFigmaProject,
+}) {
   const [otpCode, setOtpCode] = useState('')
   const [isUnlocked, setIsUnlocked] = useState(false)
   const [unlocking, setUnlocking] = useState(false)
   const [authError, setAuthError] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
+  const [figmaStatusMessage, setFigmaStatusMessage] = useState('')
   const [editingProjectId, setEditingProjectId] = useState('')
+  const [editingFigmaProjectId, setEditingFigmaProjectId] = useState('')
+  const [managerMode, setManagerMode] = useState('project')
   const [formData, setFormData] = useState(emptyForm)
+  const [figmaFormData, setFigmaFormData] = useState(emptyFigmaForm)
 
   const secret = settings?.totpSecret ?? ''
   const otpDigits = settings?.otpDigits ?? 6
@@ -160,6 +182,11 @@ function ProjectManager({ settings, customProjects = [], onAddProject, onUpdateP
     setEditingProjectId('')
   }
 
+  const resetFigmaForm = () => {
+    setFigmaFormData(emptyFigmaForm)
+    setEditingFigmaProjectId('')
+  }
+
   const startEditProject = (project) => {
     const allProjectLinks = Array.isArray(project.deployedLinks) ? project.deployedLinks : []
     const extraLinks = allProjectLinks.filter((item) => item !== project.link)
@@ -175,7 +202,19 @@ function ProjectManager({ settings, customProjects = [], onAddProject, onUpdateP
     setStatusMessage('')
   }
 
-  const submitProject = (event) => {
+  const startEditFigmaProject = (project) => {
+    setEditingFigmaProjectId(project.id)
+    setFigmaFormData({
+      title: project.title || '',
+      type: project.type || 'Figma Prototype',
+      description: project.description || '',
+      link: project.link || '',
+      embedUrl: project.embedUrl || '',
+    })
+    setFigmaStatusMessage('')
+  }
+
+  const submitProject = async (event) => {
     event.preventDefault()
 
     const title = formData.title.trim()
@@ -188,7 +227,7 @@ function ProjectManager({ settings, customProjects = [], onAddProject, onUpdateP
       .filter(Boolean)
 
     if (!title || !sourceLink) {
-      setStatusMessage('Title and source project link are required.')
+      setStatusMessage('Title and GitHub project link are required.')
       return
     }
 
@@ -202,15 +241,70 @@ function ProjectManager({ settings, customProjects = [], onAddProject, onUpdateP
       deployedLinks,
     }
 
-    if (editingProjectId) {
-      onUpdateProject(project)
-      setStatusMessage('Project updated successfully.')
-    } else {
-      onAddProject(project)
-      setStatusMessage('Project added successfully.')
+    const result = editingProjectId ? await onUpdateProject(project) : await onAddProject(project)
+
+    if (!result?.ok) {
+      setStatusMessage(result?.message || 'Unable to save project.')
+      return
     }
 
+    setStatusMessage(result.message || (editingProjectId ? 'Project updated successfully.' : 'Project added successfully.'))
     resetForm()
+  }
+
+  const updateFigmaField = (event) => {
+    const { name, value } = event.target
+    setFigmaFormData((previous) => ({ ...previous, [name]: value }))
+  }
+
+  const submitFigmaProject = async (event) => {
+    event.preventDefault()
+
+    const title = figmaFormData.title.trim()
+    const type = figmaFormData.type.trim() || 'Figma Prototype'
+    const description = figmaFormData.description.trim().slice(0, DESCRIPTION_LIMIT)
+    const link = normalizeUrl(figmaFormData.link)
+    const embedUrl = normalizeUrl(figmaFormData.embedUrl)
+
+    if (!title || !link) {
+      setFigmaStatusMessage('Title and Figma link are required.')
+      return
+    }
+
+    const figmaProject = {
+      id: editingFigmaProjectId || `figma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      title,
+      type,
+      description: description || 'Figma prototype project.',
+      link,
+      embedUrl,
+    }
+
+    const result = editingFigmaProjectId
+      ? await onUpdateFigmaProject(figmaProject)
+      : await onAddFigmaProject(figmaProject)
+
+    if (!result?.ok) {
+      setFigmaStatusMessage(result?.message || 'Unable to save Figma project.')
+      return
+    }
+
+    setFigmaStatusMessage(
+      result.message || (editingFigmaProjectId ? 'Figma project updated successfully.' : 'Figma project added successfully.'),
+    )
+    resetFigmaForm()
+  }
+
+  const removeProject = async (projectId) => {
+    const result = await onDeleteProject(projectId)
+    setStatusMessage(result?.message || (result?.ok ? 'Project deleted successfully.' : 'Unable to delete project.'))
+  }
+
+  const removeFigmaProject = async (projectId) => {
+    const result = await onDeleteFigmaProject(projectId)
+    setFigmaStatusMessage(
+      result?.message || (result?.ok ? 'Figma project deleted successfully.' : 'Unable to delete Figma project.'),
+    )
   }
 
   return (
@@ -252,105 +346,252 @@ function ProjectManager({ settings, customProjects = [], onAddProject, onUpdateP
 
       {isUnlocked && (
         <>
-          {customProjects.length > 0 && (
-            <div className="mt-5 rounded-xl border border-white/10 bg-slate-900/40 p-4">
-              <p className="text-sm font-semibold text-white">Manage Added Projects</p>
-              <div className="mt-3 space-y-2">
-                {customProjects.map((project) => (
-                  <div
-                    key={project.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-slate-900/60 p-3"
-                  >
-                    <p className="text-sm text-slate-200">{project.title}</p>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => startEditProject(project)}
-                        className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-300/20"
+          <div
+            role="radiogroup"
+            aria-label="Select manager type"
+            className="mt-5 inline-flex rounded-xl border border-white/15 bg-slate-900/70 p-1"
+          >
+            <label
+              className={`cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                managerMode === 'project'
+                  ? 'bg-cyan-400/25 text-cyan-100'
+                  : 'text-slate-300 hover:bg-white/10'
+              }`}
+            >
+              <input
+                type="radio"
+                name="manager-mode"
+                value="project"
+                checked={managerMode === 'project'}
+                onChange={(event) => setManagerMode(event.target.value)}
+                className="sr-only"
+              />
+              Project
+            </label>
+            <label
+              className={`cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                managerMode === 'figma'
+                  ? 'bg-cyan-400/25 text-cyan-100'
+                  : 'text-slate-300 hover:bg-white/10'
+              }`}
+            >
+              <input
+                type="radio"
+                name="manager-mode"
+                value="figma"
+                checked={managerMode === 'figma'}
+                onChange={(event) => setManagerMode(event.target.value)}
+                className="sr-only"
+              />
+              Figma
+            </label>
+          </div>
+
+          {managerMode === 'project' && (
+            <>
+              {customProjects.length > 0 && (
+                <div className="mt-5 rounded-xl border border-white/10 bg-slate-900/40 p-4">
+                  <p className="text-sm font-semibold text-white">Manage Added Projects</p>
+                  <div className="mt-3 space-y-2">
+                    {customProjects.map((project) => (
+                      <div
+                        key={project.id}
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-slate-900/60 p-3"
                       >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDeleteProject(project.id)}
-                        className="rounded-lg border border-rose-300/30 bg-rose-300/10 px-3 py-1.5 text-xs font-semibold text-rose-200 transition hover:bg-rose-300/20"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                        <p className="text-sm text-slate-200">{project.title}</p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEditProject(project)}
+                            className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-300/20"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeProject(project.id)}
+                            className="rounded-lg border border-rose-300/30 bg-rose-300/10 px-3 py-1.5 text-xs font-semibold text-rose-200 transition hover:bg-rose-300/20"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              )}
+
+              <form onSubmit={submitProject} className="mt-5 grid gap-4 sm:grid-cols-2">
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={updateField}
+                  placeholder="Project title"
+                  className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none"
+                />
+                <input
+                  type="url"
+                  name="link"
+                  value={formData.link}
+                  onChange={updateField}
+                  placeholder="GitHub project link"
+                  className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none"
+                />
+                <textarea
+                  name="deployedLinksText"
+                  rows="3"
+                  value={formData.deployedLinksText}
+                  onChange={updateField}
+                  placeholder="Live deployed links (separate multiple links with spaces)"
+                  className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
+                />
+                <input
+                  type="text"
+                  name="technologies"
+                  value={formData.technologies}
+                  onChange={updateField}
+                  placeholder="React, Tailwind, Node.js"
+                  className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
+                />
+                <textarea
+                  name="description"
+                  rows="4"
+                  value={formData.description}
+                  onChange={updateField}
+                  placeholder="Project description"
+                  maxLength={DESCRIPTION_LIMIT}
+                  className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
+                />
+                <p className="text-right text-xs text-slate-400 sm:col-span-2">
+                  {formData.description.length}/{DESCRIPTION_LIMIT}
+                </p>
+                <div className="flex flex-wrap gap-2 sm:col-span-2">
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
+                  >
+                    {editingProjectId ? 'Update Project' : 'Add Project'}
+                  </button>
+                  {editingProjectId && (
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+              </form>
+
+              {statusMessage && <p className="mt-3 text-sm text-cyan-200">{statusMessage}</p>}
+            </>
           )}
 
-          <form onSubmit={submitProject} className="mt-5 grid gap-4 sm:grid-cols-2">
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={updateField}
-              placeholder="Project title"
-              className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none"
-            />
-            <input
-              type="url"
-              name="link"
-              value={formData.link}
-              onChange={updateField}
-              placeholder="GitHub project link"
-              className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none"
-            />
-            <textarea
-              name="deployedLinksText"
-              rows="3"
-              value={formData.deployedLinksText}
-              onChange={updateField}
-              placeholder="Live deployed links (separate multiple links with spaces)"
-              className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
-            />
-            <input
-              type="text"
-              name="technologies"
-              value={formData.technologies}
-              onChange={updateField}
-              placeholder="React, Tailwind, Node.js"
-              className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
-            />
-            <textarea
-              name="description"
-              rows="4"
-              value={formData.description}
-              onChange={updateField}
-              placeholder="Project description"
-              maxLength={DESCRIPTION_LIMIT}
-              className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
-            />
-            <p className="text-right text-xs text-slate-400 sm:col-span-2">
-              {formData.description.length}/{DESCRIPTION_LIMIT}
-            </p>
-            <div className="flex flex-wrap gap-2 sm:col-span-2">
-              <button
-                type="submit"
-                className="rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
-              >
-                {editingProjectId ? 'Update Project' : 'Add Project'}
-              </button>
-              {editingProjectId && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10"
-                >
-                  Cancel Edit
-                </button>
+          {managerMode === 'figma' && (
+            <>
+              {figmaProjects.length > 0 && (
+                <div className="mt-5 rounded-xl border border-white/10 bg-slate-900/40 p-4">
+                  <p className="text-sm font-semibold text-white">Manage Figma Projects</p>
+                  <div className="mt-3 space-y-2">
+                    {figmaProjects.map((project) => (
+                      <div
+                        key={project.id}
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-slate-900/60 p-3"
+                      >
+                        <p className="text-sm text-slate-200">{project.title}</p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEditFigmaProject(project)}
+                            className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 transition hover:bg-cyan-300/20"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeFigmaProject(project.id)}
+                            className="rounded-lg border border-rose-300/30 bg-rose-300/10 px-3 py-1.5 text-xs font-semibold text-rose-200 transition hover:bg-rose-300/20"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
-            </div>
-          </form>
+
+              <form onSubmit={submitFigmaProject} className="mt-5 grid gap-4 sm:grid-cols-2">
+                <input
+                  type="text"
+                  name="title"
+                  value={figmaFormData.title}
+                  onChange={updateFigmaField}
+                  placeholder="Figma project title"
+                  className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none"
+                />
+                <input
+                  type="text"
+                  name="type"
+                  value={figmaFormData.type}
+                  onChange={updateFigmaField}
+                  placeholder="Type (e.g. Figma Prototype)"
+                  className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none"
+                />
+                <input
+                  type="url"
+                  name="link"
+                  value={figmaFormData.link}
+                  onChange={updateFigmaField}
+                  placeholder="Figma project link"
+                  className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
+                />
+                <input
+                  type="url"
+                  name="embedUrl"
+                  value={figmaFormData.embedUrl}
+                  onChange={updateFigmaField}
+                  placeholder="Figma embed URL (optional)"
+                  className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
+                />
+                <textarea
+                  name="description"
+                  rows="4"
+                  value={figmaFormData.description}
+                  onChange={updateFigmaField}
+                  placeholder="Figma project description"
+                  maxLength={DESCRIPTION_LIMIT}
+                  className="rounded-xl border border-white/20 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none sm:col-span-2"
+                />
+                <p className="text-right text-xs text-slate-400 sm:col-span-2">
+                  {figmaFormData.description.length}/{DESCRIPTION_LIMIT}
+                </p>
+                <div className="flex flex-wrap gap-2 sm:col-span-2">
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
+                  >
+                    {editingFigmaProjectId ? 'Update Figma Project' : 'Add Figma Project'}
+                  </button>
+                  {editingFigmaProjectId && (
+                    <button
+                      type="button"
+                      onClick={resetFigmaForm}
+                      className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+              </form>
+
+              {figmaStatusMessage && <p className="mt-2 text-sm text-emerald-200">{figmaStatusMessage}</p>}
+            </>
+          )}
         </>
       )}
-
-      {statusMessage && <p className="mt-3 text-sm text-cyan-200">{statusMessage}</p>}
     </motion.div>
   )
 }
