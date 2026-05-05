@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply m-0 bg-slate-deep bg-grid-pattern bg-[size:24px_24px] font-sans text-slate-100 antialiased;
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.project-flip-card {
+  perspective: 1300px;
+}
+
+.project-flip-card-inner {
+  position: relative;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.project-flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.project-flip-back {
+  transform: rotateY(180deg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .project-flip-card:hover .project-flip-card-inner {
+    transform: rotateY(180deg);
+  }
+}
+
+@layer components {
+  .section-shell {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .glass-panel {
+    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-glass;
+  }
+
+  .section-title {
+    @apply font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl;
+  }
+
+  .section-copy {
+    @apply mt-4 max-w-3xl text-slate-300;
+  }
+}
