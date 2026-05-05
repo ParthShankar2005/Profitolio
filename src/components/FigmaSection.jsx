@@ -25,15 +25,15 @@ const applyCommonEmbedParameters = (url) => {
   url.searchParams.set('embed-host', FIGMA_EMBED_HOST)
   url.searchParams.delete('embed_host')
   url.searchParams.set('footer', 'false')
-  url.searchParams.set('viewport-controls', 'true')
+  url.searchParams.set('viewport-controls', 'false')
 }
 
 const optimizePrototypeEmbed = (url) => {
   url.searchParams.set('show-proto-sidebar', 'false')
   url.searchParams.set('hotspot-hints', 'false')
   url.searchParams.set('device-frame', 'false')
-  url.searchParams.set('scaling', 'contain')
-  url.searchParams.set('content-scaling', 'fixed')
+  url.searchParams.set('scaling', 'fit-width')
+  url.searchParams.set('content-scaling', 'responsive')
 }
 
 const optimizeFileEmbed = (url) => {
@@ -100,7 +100,7 @@ function FigmaSection({
         </>
       )}
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid gap-4 md:grid-cols-2">
         {projects.map((project, index) => {
           const embedSrc = getOptimizedEmbedUrl(project.embedUrl, project.link)
 
@@ -114,11 +114,11 @@ function FigmaSection({
               className="rounded-2xl border border-white/10 bg-slate-900/85 p-5 shadow-glass transition duration-300 hover:-translate-y-1 hover:border-cyan-300/35 hover:shadow-glow"
             >
               {embedSrc && (
-                <div className="mb-4 overflow-hidden rounded-xl border border-white/15 bg-slate-950/70">
+                <div className="mb-4 overflow-hidden rounded-xl border border-white/15 bg-transparent">
                   <iframe
                     title={`${project.title} prototype preview`}
                     src={embedSrc}
-                    className="h-[280px] w-full sm:h-[340px] lg:h-[380px]"
+                    className="aspect-video w-full"
                     style={{ border: 0 }}
                     loading="lazy"
                     allowFullScreen
